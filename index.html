@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Expense Tracker</title>
+  <link rel="stylesheet" href="style.css" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+  <div class="container">
+    <h1>💰 Daily Expense Tracker</h1>
+    
+    <div class="dashboard">
+      <div class="card today">Today: ₹<span id="today-total">0</span></div>
+      <div class="card week">This Week: ₹<span id="week-total">0</span></div>
+      <div class="card month">This Month: ₹<span id="month-total">0</span></div>
+    </div>
+
+    <div class="filter-chart">
+      <label for="month-filter">Filter by Month:</label>
+      <select id="month-filter"></select>
+      <canvas id="pie-chart" width="400" height="400"></canvas>
+    </div>
+
+    <form id="expense-form">
+      <input type="text" id="expense-name" placeholder="Expense name" required />
+      <input type="number" id="expense-amount" placeholder="Amount (₹)" required />
+      <button type="submit">➕ Add Expense</button>
+    </form>
+
+    <h2>All Expenses</h2>
+    <ul id="expense-list"></ul>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
