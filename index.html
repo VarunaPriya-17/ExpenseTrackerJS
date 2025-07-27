@@ -5,34 +5,44 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Expense Tracker</title>
   <link rel="stylesheet" href="style.css" />
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
-  <div class="container">
-    <h1>💰 Daily Expense Tracker</h1>
-    
-    <div class="dashboard">
-      <div class="card today">Today: ₹<span id="today-total">0</span></div>
-      <div class="card week">This Week: ₹<span id="week-total">0</span></div>
-      <div class="card month">This Month: ₹<span id="month-total">0</span></div>
-    </div>
-
-    <div class="filter-chart">
-      <label for="month-filter">Filter by Month:</label>
-      <select id="month-filter"></select>
-      <canvas id="pie-chart" width="400" height="400"></canvas>
-    </div>
-
-    <form id="expense-form">
-      <input type="text" id="expense-name" placeholder="Expense name" required />
-      <input type="number" id="expense-amount" placeholder="Amount (₹)" required />
-      <button type="submit">➕ Add Expense</button>
-    </form>
-
-    <h2>All Expenses</h2>
-    <ul id="expense-list"></ul>
+  <div class="theme-toggle">
+    <button onclick="setTheme('light')">🌞</button>
+    <button onclick="setTheme('dark')">🌙</button>
+    <button onclick="setTheme('purple')">💜</button>
   </div>
 
+  <div class="container">
+    <div id="loginSection">
+      <h2>Login</h2>
+      <input type="text" id="username" placeholder="Enter your name" />
+      <button onclick="login()">Login</button>
+    </div>
+
+    <div id="mainApp" style="display: none;">
+      <h2>Welcome, <span id="userDisplay"></span>!</h2>
+      <button onclick="logout()">Logout</button>
+
+      <h3>Add Expense</h3>
+      <input type="text" id="expenseName" placeholder="Expense name" />
+      <input type="number" id="expenseAmount" placeholder="Amount" />
+      <button onclick="addExpense()">Add</button>
+
+      <div>
+        <label>Filter by month:</label>
+        <select id="monthFilter" onchange="filterByMonth()">
+          <option value="all">All</option>
+        </select>
+      </div>
+
+      <ul id="expenseList"></ul>
+      <div id="totals"></div>
+      <canvas id="pieChart" width="300" height="300"></canvas>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="script.js"></script>
 </body>
 </html>
