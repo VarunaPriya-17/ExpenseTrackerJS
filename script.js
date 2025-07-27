@@ -1,162 +1,146 @@
-let expenses = JSON.parse(localStorage.getItem('expenses')) || [];
-
-const form = document.getElementById('expense-form');
-const nameInput = document.getElementById('expense-name');
-const amountInput = document.getElementById('expense-amount');
-const list = document.getElementById('expense-list');
-
-const todayTotal = document.getElementById('today-total');
-const weekTotal = document.getElementById('week-total');
-const monthTotal = document.getElementById('month-total');
-
-const monthFilter = document.getElementById('month-filter');
-const pieCanvas = document.getElementById('pie-chart');
-let pieChart;
+let expenses = JSON.parse(localStorage.getItem("expenses")) || [];
 
 function saveExpenses() {
-  localStorage.setItem('expenses', JSON.stringify(expenses));
-}
-
-function formatDate(date) {
-  return new Date(date).toLocaleDateString('en-GB');
-}
-
-function getMonthName(monthNum) {
-  const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", 
-                  "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-  return months[parseInt(monthNum) - 1];
-}
-
-function populateMonthFilter() {
-  const uniqueMonths = new Set();
-
-  expenses.forEach(exp => {
-    const date = new Date(exp.date);
-    const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
-    uniqueMonths.add(monthKey);
-  });
-
-  const sorted = Array.from(uniqueMonths).sort().reverse();
-
-  monthFilter.innerHTML = `<option value="">-- All Months --</option>`;
-  sorted.forEach(month => {
-    const [year, mon] = month.split('-');
-    const label = `${getMonthName(mon)} ${year}`;
-    monthFilter.innerHTML += `<option value="${month}">${label}</option>`;
-  });
+  localStorage.setItem("expenses", JSON.stringify(expenses));
 }
 
 function renderExpenses() {
+  const list = document.getElementById("expenseList");
+  const totalsDiv = document.getElementById("totals");
+  const monthFilter = document.getElementById("monthFilter");
   const selectedMonth = monthFilter.value;
+  list.innerHTML = "";
+
   let filtered = expenses;
 
-  if (selectedMonth) {
-    filtered = expenses.filter(exp => {
-      const date = new Date(exp.date);
-      const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
-      return monthKey === selectedMonth;
-    });
-  }
-
-  list.innerHTML = '';
-  filtered.forEach((exp, index) => {
-    const li = document.createElement('li');
-    li.innerHTML = `
-      ${exp.name} - ₹${exp.amount} <small>(${formatDate(exp.date)})</small>
-      <button class="delete-btn" onclick="deleteExpense(${index})">X</button>
-    `;
-    list.appendChild(li);
+  // Populate month filter
+  const months = [...new Set(expenses.map(e => e.date.slice(0, 7)))];
+  monthFilter.innerHTML = `<option value="all">All</option>`;
+  months.forEach(month => {
+    const option = document.createElement("option");
+    option.value = month;
+    option.textContent = month;
+    if (selectedMonth === month) option.selected = true;
+    monthFilter.appendChild(option);
   });
 
-  updateDashboard();
-  renderPieChart(filtered);
-}
-
-function deleteExpense(index) {
-  const confirmDelete = confirm("Are you sure you want to delete this expense?");
-  if (confirmDelete) {
-    expenses.splice(index, 1);
-    saveExpenses();
-    renderExpenses();
-    populateMonthFilter();
+  if (selectedMonth !== "all") {
+    filtered = expenses.filter(e => e.date.slice(0, 7) === selectedMonth);
   }
+
+  let weekly = 0, monthly = 0;
+  const now = new Date();
+  const currentMonth = now.toISOString().slice(0, 7);
+  const currentWeek = now.getDate() - now.getDay(); // Sun = start of week
+
+  let categorySums = {};
+
+  filtered.forEach((expense, index) => {
+    const li = document.createElement("li");
+    li.innerHTML = `${expense.name} - ₹${expense.amount} (${expense.date})
+      <span onclick="deleteExpense(${index})" style="cursor:pointer;">❌</span>`;
+    list.appendChild(li);
+
+    const date = new Date(expense.date);
+    if (expense.date.slice(0, 7) === currentMonth) {
+      monthly += +expense.amount;
+    }
+    if (date.getMonth() === now.getMonth() && date.getDate() >= currentWeek) {
+      weekly += +expense.amount;
+    }
+
+    // Category pie data
+    categorySums[expense.name] = (categorySums[expense.name] || 0) + +expense.amount;
+  });
+
+  totalsDiv.innerHTML = `
+    <p><strong>Weekly Total:</strong> ₹${weekly}</p>
+    <p><strong>Monthly Total:</strong> ₹${monthly}</p>
+  `;
+
+  renderPieChart(categorySums);
 }
 
-form.addEventListener('submit', function (e) {
-  e.preventDefault();
-  const name = nameInput.value.trim();
-  const amount = parseFloat(amountInput.value.trim());
-  const date = new Date().toISOString();
-
-  if (!name || !amount || amount <= 0) return;
+function addExpense() {
+  const name = document.getElementById("expenseName").value;
+  const amount = document.getElementById("expenseAmount").value;
+  const date = new Date().toISOString().split("T")[0];
+  if (!name || !amount) return alert("Enter all details");
 
   expenses.push({ name, amount, date });
   saveExpenses();
   renderExpenses();
-  populateMonthFilter();
-  form.reset();
-});
-
-function updateDashboard() {
-  const now = new Date();
-  const today = now.toISOString().split('T')[0];
-
-  let todaySum = 0, weekSum = 0, monthSum = 0;
-
-  expenses.forEach(exp => {
-    const expDate = new Date(exp.date);
-    const expISO = expDate.toISOString().split('T')[0];
-
-    if (expISO === today) todaySum += exp.amount;
-
-    const daysDiff = (now - expDate) / (1000 * 60 * 60 * 24);
-    if (daysDiff <= 7) weekSum += exp.amount;
-
-    if (expDate.getMonth() === now.getMonth() && expDate.getFullYear() === now.getFullYear()) {
-      monthSum += exp.amount;
-    }
-  });
-
-  todayTotal.textContent = todaySum;
-  weekTotal.textContent = weekSum;
-  monthTotal.textContent = monthSum;
+  document.getElementById("expenseName").value = "";
+  document.getElementById("expenseAmount").value = "";
 }
 
-function renderPieChart(filteredExpenses) {
-  const categoryTotals = {};
+function deleteExpense(index) {
+  if (confirm("Are you sure you want to delete this expense?")) {
+    expenses.splice(index, 1);
+    saveExpenses();
+    renderExpenses();
+  }
+}
 
-  filteredExpenses.forEach(exp => {
-    categoryTotals[exp.name] = (categoryTotals[exp.name] || 0) + exp.amount;
-  });
+function filterByMonth() {
+  renderExpenses();
+}
 
-  const labels = Object.keys(categoryTotals);
-  const values = Object.values(categoryTotals);
+// --- Theme Functions ---
+function setTheme(mode) {
+  document.body.className = "";
+  if (mode !== "light") document.body.classList.add(mode);
+  localStorage.setItem("theme", mode);
+}
 
-  if (pieChart) pieChart.destroy();
+window.onload = () => {
+  const savedTheme = localStorage.getItem("theme") || "light";
+  setTheme(savedTheme);
+  checkLogin();
+};
 
-  pieChart = new Chart(pieCanvas, {
-    type: 'pie',
+// --- Pie Chart ---
+let pie;
+function renderPieChart(data) {
+  const ctx = document.getElementById("pieChart").getContext("2d");
+  if (pie) pie.destroy();
+
+  pie = new Chart(ctx, {
+    type: "pie",
     data: {
-      labels: labels,
+      labels: Object.keys(data),
       datasets: [{
-        data: values,
+        data: Object.values(data),
         backgroundColor: [
-          '#007bff', '#28a745', '#ffc107', '#dc3545', '#17a2b8',
-          '#6610f2', '#6f42c1', '#e83e8c', '#20c997', '#fd7e14'
-        ],
+          "#ff6384", "#36a2eb", "#ffce56", "#66bb6a", "#ba68c8", "#ffa726"
+        ]
       }]
-    },
-    options: {
-      responsive: true,
-      plugins: {
-        legend: { position: 'bottom' },
-        title: { display: true, text: 'Expense Breakdown' }
-      }
     }
   });
 }
 
-// Init
-monthFilter.addEventListener('change', renderExpenses);
-populateMonthFilter();
-renderExpenses();
+// --- Login System ---
+function login() {
+  const name = document.getElementById("username").value;
+  if (!name) return alert("Enter a name");
+  localStorage.setItem("user", name);
+  checkLogin();
+}
+
+function logout() {
+  localStorage.removeItem("user");
+  location.reload();
+}
+
+function checkLogin() {
+  const user = localStorage.getItem("user");
+  if (user) {
+    document.getElementById("mainApp").style.display = "block";
+    document.getElementById("loginSection").style.display = "none";
+    document.getElementById("userDisplay").textContent = user;
+    renderExpenses();
+  } else {
+    document.getElementById("mainApp").style.display = "none";
+    document.getElementById("loginSection").style.display = "block";
+  }
+}
