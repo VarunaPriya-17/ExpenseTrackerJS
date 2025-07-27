@@ -1,103 +1,71 @@
 body {
-  font-family: 'Segoe UI', sans-serif;
-  background: linear-gradient(135deg, #74ebd5 0%, #acb6e5 100%);
+  font-family: Arial, sans-serif;
   margin: 0;
-  padding: 0;
+  padding: 1rem;
+  background-color: var(--bg);
+  color: var(--text);
+  transition: all 0.3s ease;
+}
+
+:root {
+  --bg: #ffffff;
+  --text: #000000;
+  --accent: #007bff;
+}
+
+body.dark {
+  --bg: #1e1e1e;
+  --text: #f1f1f1;
+  --accent: #ff9800;
+}
+
+body.purple {
+  --bg: #f3e8ff;
+  --text: #3a0076;
+  --accent: #9c27b0;
 }
 
 .container {
-  width: 90%;
   max-width: 600px;
-  margin: 50px auto;
-  background: white;
-  padding: 25px 30px;
-  border-radius: 12px;
-  box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+  margin: auto;
 }
 
-h1, h2 {
-  text-align: center;
-  color: #333;
-}
-
-.dashboard {
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: 20px;
-  gap: 10px;
-}
-
-.card {
-  flex: 1;
-  background: #fff;
-  border-left: 6px solid #333;
-  padding: 15px;
-  border-radius: 8px;
-  font-weight: bold;
-  text-align: center;
-  color: #222;
-}
-
-.today { border-color: #28a745; background: #e6ffed; }
-.week  { border-color: #ffc107; background: #fff8e1; }
-.month { border-color: #007bff; background: #e1f0ff; }
-
-.filter-chart {
-  margin: 30px 0;
-  text-align: center;
-}
-
-#month-filter {
-  padding: 8px 12px;
-  font-size: 16px;
-  margin-bottom: 20px;
-}
-
-form {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-input, button {
-  padding: 12px;
-  font-size: 16px;
-  border-radius: 6px;
-  border: 1px solid #ccc;
+input, button, select {
+  padding: 10px;
+  margin: 5px 0;
+  width: 100%;
+  font-size: 1rem;
 }
 
 button {
-  background-color: #007bff;
+  background-color: var(--accent);
   color: white;
   border: none;
   cursor: pointer;
+  border-radius: 4px;
 }
 
 button:hover {
-  background-color: #0056b3;
+  opacity: 0.9;
 }
 
-#expense-list {
-  list-style: none;
+ul {
+  list-style-type: none;
   padding: 0;
-  margin-top: 20px;
 }
 
-#expense-list li {
-  background: #f9f9f9;
-  padding: 10px 14px;
-  margin-bottom: 10px;
+li {
+  padding: 10px;
+  margin: 5px 0;
+  background: var(--accent);
+  color: white;
   display: flex;
   justify-content: space-between;
-  border-left: 5px solid #007bff;
-  border-radius: 5px;
+  border-radius: 4px;
 }
 
-.delete-btn {
-  background: red;
-  color: white;
-  border: none;
-  padding: 4px 8px;
-  cursor: pointer;
-  border-radius: 4px;
+.theme-toggle {
+  position: fixed;
+  top: 10px;
+  right: 10px;
 }
